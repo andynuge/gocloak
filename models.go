@@ -1165,6 +1165,18 @@ type IdentityProviderRepresentation struct {
 	TrustEmail                *bool              `json:"trustEmail,omitempty"`
 }
 
+// OrgDomain returns the organization domain configured for the identity provider, or an empty string if not set
+func (c *IdentityProviderRepresentation) OrgDomain() string {
+	if c == nil || c.Config == nil {
+		return ""
+	}
+	v, ok := (*c.Config)["kc.org.domain"]
+	if !ok {
+		return ""
+	}
+	return v
+}
+
 // RedirectModeEmailMatches returns true if the identity provider's redirect mode is set to email domain match
 func (c *IdentityProviderRepresentation) RedirectModeEmailMatches() bool {
 	if c == nil || c.Config == nil {

@@ -346,6 +346,61 @@ func TestStringerOmitEmpty(t *testing.T) {
 	}
 }
 
+func Test_IdentityProviderRepresentation_OrgDomain(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		config   map[string]string
+		expected string
+	}{
+		{
+			name: "valid domain",
+			config: map[string]string{
+				"kc.org.domain": "example.com",
+			},
+			expected: "example.com",
+		},
+		{
+			name:     "missing value",
+			config:   map[string]string{},
+			expected: "",
+		},
+		{
+			name: "nil config",
+			// config is nil
+			expected: "",
+		},
+		{
+			name: "empty string value",
+			config: map[string]string{
+				"kc.org.domain": "",
+			},
+			expected: "",
+		},
+		{
+			name: "missing key",
+			config: map[string]string{
+				"some.other.key": "value",
+			},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idp := gocloak.IdentityProviderRepresentation{
+				Alias:       gocloak.StringP("test-idp"),
+				DisplayName: gocloak.StringP("Test IdP"),
+				ProviderID:  gocloak.StringP("oidc"),
+				Enabled:     gocloak.BoolP(true),
+				Config:      &tt.config,
+			}
+			assert.Equal(t, tt.expected, idp.OrgDomain())
+		})
+	}
+}
+
 func Test_IdentityProviderRepresentation_RedirectModeEmailMatches(t *testing.T) {
 	t.Parallel()
 
