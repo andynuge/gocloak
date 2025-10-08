@@ -7130,7 +7130,7 @@ func CreateOrganization(t *testing.T, client gocloak.GoCloakIface, name, alias, 
 	org := gocloak.OrganizationRepresentation{
 		Name:        gocloak.StringP(name),
 		Alias:       gocloak.StringP(alias),
-		Enable:      gocloak.BoolP(true),
+		Enabled:     gocloak.BoolP(true),
 		Description: gocloak.StringP("Just a test organization"),
 		Domains: &[]gocloak.OrganizationDomainRepresentation{
 			{
@@ -7269,7 +7269,7 @@ func Test_UpdateOrganization(t *testing.T) {
 		orgID)
 	require.NoError(t, err, "GetOrganizationByID failed")
 
-	organization.Enable = gocloak.BoolP(false)
+	organization.Enabled = gocloak.BoolP(false)
 
 	err = client.UpdateOrganization(
 		context.Background(),

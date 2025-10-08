@@ -1500,7 +1500,7 @@ type OrganizationRepresentation struct {
 	ID                *string                             `json:"id,omitempty"`
 	Name              *string                             `json:"name,omitempty"`
 	Alias             *string                             `json:"alias,omitempty"`
-	Enable            *bool                               `json:"enabled,omitempty"`
+	Enabled           *bool                               `json:"enabled,omitempty"`
 	Description       *string                             `json:"description,omitempty"`
 	RedirectURL       *string                             `json:"redirectUrl,omitempty"`
 	Attributes        *map[string][]string                `json:"attributes,omitempty"`
