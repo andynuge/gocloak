@@ -6613,7 +6613,7 @@ func Test_GetClientsWithPagination(t *testing.T) {
 	defer tearDown()
 	t.Log(createdClientID)
 	first := 0
-	max := 1
+	maxItems := 1
 	// Looking for a created client
 	clients, err := client.GetClients(
 		context.Background(),
@@ -6621,11 +6621,11 @@ func Test_GetClientsWithPagination(t *testing.T) {
 		cfg.GoCloak.Realm,
 		gocloak.GetClientsParams{
 			First: &first,
-			Max:   &max,
+			Max:   &maxItems,
 		},
 	)
 	require.NoError(t, err)
-	require.Equal(t, max, len(clients))
+	require.Equal(t, maxItems, len(clients))
 }
 
 func Test_ImportIdentityProviderConfig(t *testing.T) {
@@ -7558,11 +7558,11 @@ func Test_AddOrganizationIdentityProvider(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Add IdP", "test-inc-add-idp", "test-inc-add-idp.com")
 	defer tearDownOrg()
 
-	tearDownIdP1, idpId1 := CreateIdentityProvider(t, client, "test-add-org-idps-1")
-	defer tearDownIdP1()
+	tearDownIDP1, idpId1 := CreateIdentityProvider(t, client, "test-add-org-idps-1")
+	defer tearDownIDP1()
 
-	tearDownIdP2, _ := CreateIdentityProvider(t, client, "test-add-org-idps-2")
-	defer tearDownIdP2()
+	tearDownIDP2, _ := CreateIdentityProvider(t, client, "test-add-org-idps-2")
+	defer tearDownIDP2()
 
 	// Add by identity provider ID
 	err := client.AddOrganizationIdentityProvider(
@@ -7592,8 +7592,8 @@ func Test_RemoveOrganizationIdentityProvider(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Remove IdP", "test-inc-remove-idp", "test-inc-remove-idp.com")
 	defer tearDownOrg()
 
-	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-remove-org-idps")
-	defer tearDownIdP()
+	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-remove-org-idps")
+	defer tearDownIDP()
 
 	err := client.AddOrganizationIdentityProvider(
 		context.Background(),
@@ -7621,8 +7621,8 @@ func Test_GetOrganizationIdentityProviderByAlias(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP By Alias", "test-inc-get-idp-by-alias", "test-inc-get-idp-by-alias.com")
 	defer tearDownOrg()
 
-	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps-by-alias")
-	defer tearDownIdP()
+	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps-by-alias")
+	defer tearDownIDP()
 
 	err := client.AddOrganizationIdentityProvider(
 		context.Background(),
@@ -7651,8 +7651,8 @@ func Test_GetOrganizationIdentityProviders(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP", "test-inc-get-idp", "test-inc-get-idp.com")
 	defer tearDownOrg()
 
-	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps")
-	defer tearDownIdP()
+	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps")
+	defer tearDownIDP()
 
 	idps, err := client.GetOrganizationIdentityProviders(
 		context.Background(),
