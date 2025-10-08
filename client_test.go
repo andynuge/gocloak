@@ -7482,3 +7482,201 @@ func Test_GetMemberAssociatedOrganizations(t *testing.T) {
 
 	require.GreaterOrEqual(t, len(organizations), 1)
 }
+
+func CreateIdentityProvider(t *testing.T, client gocloak.GoCloakIface, alias string) (func(), string) {
+	cfg := GetConfig(t)
+	token := GetAdminToken(t, client)
+
+	idp := gocloak.IdentityProviderRepresentation{
+		Alias:       gocloak.StringP(alias),
+		DisplayName: gocloak.StringP("Test IdP " + alias),
+		ProviderID:  gocloak.StringP("oidc"),
+		Enabled:     gocloak.BoolP(true),
+		Config: &map[string]string{
+			"tokenUrl":                           "https://test-idp.com/oauth2/default/v1/token",
+			"acceptsPromptNoneForwardFromClient": "false",
+			"jwksUrl":                            "https://test-idp.com/oauth2/default/v1/keys",
+			"isAccessTokenJWT":                   "false",
+			"filteredByClaim":                    "false",
+			"backchannelSupported":               "false",
+			"caseSensitiveOriginalUsername":      "false",
+			"issuer":                             "https://test-idp.com/oauth2/default",
+			"loginHint":                          "true",
+			"clientAuthMethod":                   "client_secret_post",
+			"syncMode":                           "LEGACY",
+			"clientSecret":                       "**********",
+			"allowedClockSkew":                   "0",
+			"defaultScope":                       "openid profile email",
+			"validateSignature":                  "true",
+			"clientId":                           "client-id-" + alias,
+			"uiLocales":                          "false",
+			"disableNonce":                       "false",
+			"useJwksUrl":                         "true",
+			"kc.org.domain":                      "test-idp.com",
+			"kc.org.broker.redirect.mode.email-matches": "true",
+			"sendClientIdOnLogout":                      "false",
+			"pkceEnabled":                               "false",
+			"metadataDescriptorUrl":                     "https://test-idp.com/oauth2/default/.well-known/oauth-authorization-server",
+			"authorizationUrl":                          "https://test-idp.com/oauth2/default/v1/authorize",
+			"disableUserInfo":                           "false",
+			"logoutUrl":                                 "https://test-idp.com/oauth2/default/v1/logout",
+			"sendIdTokenOnLogout":                       "true",
+			"passMaxAge":                                "false",
+			"prompt":                                    "select_account",
+		},
+	}
+
+	idpID, err := client.CreateIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		idp,
+	)
+
+	require.NoError(t, err, "CreateIdentityProvider failed")
+
+	t.Logf("Created Identity Provider with ID: %s", idpID)
+	tearDown := func() {
+		err := client.DeleteIdentityProvider(
+			context.Background(),
+			token.AccessToken,
+			cfg.GoCloak.Realm,
+			idpID,
+		)
+		require.NoError(t, err, "DeleteIdentityProvider failed")
+	}
+
+	return tearDown, idpID
+}
+
+func Test_AddOrganizationIdentityProvider(t *testing.T) {
+	// t.Parallel()
+	cfg := GetConfig(t)
+	client := NewClientWithDebug(t)
+	token := GetAdminToken(t, client)
+
+	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Add IdP", "test-inc-add-idp", "test-inc-add-idp.com")
+	defer tearDownOrg()
+
+	tearDownIdP1, idpId1 := CreateIdentityProvider(t, client, "test-add-org-idps-1")
+	defer tearDownIdP1()
+
+	tearDownIdP2, _ := CreateIdentityProvider(t, client, "test-add-org-idps-2")
+	defer tearDownIdP2()
+
+	// Add by identity provider ID
+	err := client.AddOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		idpId1)
+	require.NoError(t, err, "AddOrganizationIdentityProvider with id failed")
+
+	// Add by identity provider alias
+	err = client.AddOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		"test-add-org-idps-2")
+	require.NoError(t, err, "AddOrganizationIdentityProvider with alias failed")
+}
+
+func Test_RemoveOrganizationIdentityProvider(t *testing.T) {
+	// t.Parallel()
+	cfg := GetConfig(t)
+	client := NewClientWithDebug(t)
+	token := GetAdminToken(t, client)
+
+	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Remove IdP", "test-inc-remove-idp", "test-inc-remove-idp.com")
+	defer tearDownOrg()
+
+	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-remove-org-idps")
+	defer tearDownIdP()
+
+	err := client.AddOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		idpId)
+	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
+
+	err = client.RemoveOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		idpId)
+	require.NoError(t, err, "RemoveOrganizationIdentityProvider failed")
+}
+
+func Test_GetOrganizationIdentityProviderByAlias(t *testing.T) {
+	// t.Parallel()
+	cfg := GetConfig(t)
+	client := NewClientWithDebug(t)
+	token := GetAdminToken(t, client)
+
+	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP By Alias", "test-inc-get-idp-by-alias", "test-inc-get-idp-by-alias.com")
+	defer tearDownOrg()
+
+	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps-by-alias")
+	defer tearDownIdP()
+
+	err := client.AddOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		idpId)
+	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
+
+	idp, err := client.GetOrganizationIdentityProviderByAlias(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		"test-get-org-idps-by-alias")
+	require.NoError(t, err, "GetOrganizationIdentityProviderByAlias failed")
+	require.Equal(t, *idp.Alias, "test-get-org-idps-by-alias", "GetOrganizationIdentityProviderByAlias returned wrong IdP")
+}
+
+func Test_GetOrganizationIdentityProviders(t *testing.T) {
+	// t.Parallel()
+	cfg := GetConfig(t)
+	client := NewClientWithDebug(t)
+	token := GetAdminToken(t, client)
+
+	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP", "test-inc-get-idp", "test-inc-get-idp.com")
+	defer tearDownOrg()
+
+	tearDownIdP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps")
+	defer tearDownIdP()
+
+	idps, err := client.GetOrganizationIdentityProviders(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID)
+	require.NoError(t, err, "GetOrganizationIdentityProviders failed")
+	require.Equal(t, len(idps), 0, "GetOrganizationIdentityProviders should return 0 IdPs")
+
+	// Associate IdP with Organization
+	err = client.AddOrganizationIdentityProvider(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID,
+		idpId)
+	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
+
+	idps, err = client.GetOrganizationIdentityProviders(
+		context.Background(),
+		token.AccessToken,
+		cfg.GoCloak.Realm,
+		orgID)
+	require.NoError(t, err, "GetOrganizationIdentityProviders failed")
+	require.Equal(t, len(idps), 1, "GetOrganizationIdentityProviders should return 1 IdP")
+	require.Equal(t, *idps[0].Alias, "test-get-org-idps", "GetOrganizationIdentityProviders returned wrong IdP")
+}

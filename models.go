@@ -1165,6 +1165,15 @@ type IdentityProviderRepresentation struct {
 	TrustEmail                *bool              `json:"trustEmail,omitempty"`
 }
 
+// RedirectModeEmailMatches returns true if the identity provider's redirect mode is set to email domain match
+func (c *IdentityProviderRepresentation) RedirectModeEmailMatches() bool {
+	if c == nil || c.Config == nil {
+		return false
+	}
+	v, ok := (*c.Config)["kc.org.broker.redirect.mode.email-matches"]
+	return ok && v == "true"
+}
+
 // IdentityProviderMapper represents the body of a call to add a mapper to
 // an identity provider
 type IdentityProviderMapper struct {
