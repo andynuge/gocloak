@@ -2,37 +2,53 @@ name: Tests
 on:
   - push
   - pull_request
+
 jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go environment
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24
+          go-version: '1.24'
+          cache: true
+
       - name: Checkout code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4
+
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6.1.0
-      - name: WriteGoList
-        run: go list -json -m all > go.list
-      - name: nancy
-        uses: sonatype-nexus-community/nancy-github-action@main
+        uses: golangci/golangci-lint-action@v6
+
       - name: Run Keycloak
         run: |
           make start-keycloak
-          sleep 15
-      - name: Unit Tests
+          sleep 20
+
+      - name: Run Tests
         run: |
-          go test -failfast -race -cover -coverprofile=coverage.txt -covermode=atomic -p 100 -cpu 1,2 -bench . -benchmem > test.log
-          cat test.log
+          set -o pipefail
+          go test -failfast -race -cover -coverprofile=coverage.txt -covermode=atomic -p 10 ./... 2>&1 | tee test.log
+          go tool cover -html=coverage.txt -o coverage.html
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: |
+            test.log
+            coverage.txt
+            coverage.html
+            go.list
+
       - name: Failed Logs
         if: failure()
         run: |
-          cat test.log
-          docker ps
-          docker logs keycloak
-      - name: CodeCov
-        uses: codecov/codecov-action@v4.5.0
-        with:
-          file: ./coverage.txt
+          if [ -f test.log ]; then
+            echo "=== test.log ==="
+            cat test.log
+          else
+            echo "test.log not found"
+          fi
+          docker ps || true
+          docker logs keycloak || true

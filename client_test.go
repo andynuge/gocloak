@@ -7558,7 +7558,7 @@ func Test_AddOrganizationIdentityProvider(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Add IdP", "test-inc-add-idp", "test-inc-add-idp.com")
 	defer tearDownOrg()
 
-	tearDownIDP1, idpId1 := CreateIdentityProvider(t, client, "test-add-org-idps-1")
+	tearDownIDP1, idpID1 := CreateIdentityProvider(t, client, "test-add-org-idps-1")
 	defer tearDownIDP1()
 
 	tearDownIDP2, _ := CreateIdentityProvider(t, client, "test-add-org-idps-2")
@@ -7570,7 +7570,7 @@ func Test_AddOrganizationIdentityProvider(t *testing.T) {
 		token.AccessToken,
 		cfg.GoCloak.Realm,
 		orgID,
-		idpId1)
+		idpID1)
 	require.NoError(t, err, "AddOrganizationIdentityProvider with id failed")
 
 	// Add by identity provider alias
@@ -7592,7 +7592,7 @@ func Test_RemoveOrganizationIdentityProvider(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Remove IdP", "test-inc-remove-idp", "test-inc-remove-idp.com")
 	defer tearDownOrg()
 
-	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-remove-org-idps")
+	tearDownIDP, idpID := CreateIdentityProvider(t, client, "test-remove-org-idps")
 	defer tearDownIDP()
 
 	err := client.AddOrganizationIdentityProvider(
@@ -7600,7 +7600,7 @@ func Test_RemoveOrganizationIdentityProvider(t *testing.T) {
 		token.AccessToken,
 		cfg.GoCloak.Realm,
 		orgID,
-		idpId)
+		idpID)
 	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
 
 	err = client.RemoveOrganizationIdentityProvider(
@@ -7608,7 +7608,7 @@ func Test_RemoveOrganizationIdentityProvider(t *testing.T) {
 		token.AccessToken,
 		cfg.GoCloak.Realm,
 		orgID,
-		idpId)
+		idpID)
 	require.NoError(t, err, "RemoveOrganizationIdentityProvider failed")
 }
 
@@ -7621,7 +7621,7 @@ func Test_GetOrganizationIdentityProviderByAlias(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP By Alias", "test-inc-get-idp-by-alias", "test-inc-get-idp-by-alias.com")
 	defer tearDownOrg()
 
-	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps-by-alias")
+	tearDownIDP, idpID := CreateIdentityProvider(t, client, "test-get-org-idps-by-alias")
 	defer tearDownIDP()
 
 	err := client.AddOrganizationIdentityProvider(
@@ -7629,7 +7629,7 @@ func Test_GetOrganizationIdentityProviderByAlias(t *testing.T) {
 		token.AccessToken,
 		cfg.GoCloak.Realm,
 		orgID,
-		idpId)
+		idpID)
 	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
 
 	idp, err := client.GetOrganizationIdentityProviderByAlias(
@@ -7651,7 +7651,7 @@ func Test_GetOrganizationIdentityProviders(t *testing.T) {
 	tearDownOrg, orgID := CreateOrganization(t, client, "Test Inc Get IdP", "test-inc-get-idp", "test-inc-get-idp.com")
 	defer tearDownOrg()
 
-	tearDownIDP, idpId := CreateIdentityProvider(t, client, "test-get-org-idps")
+	tearDownIDP, idpID := CreateIdentityProvider(t, client, "test-get-org-idps")
 	defer tearDownIDP()
 
 	idps, err := client.GetOrganizationIdentityProviders(
@@ -7668,7 +7668,7 @@ func Test_GetOrganizationIdentityProviders(t *testing.T) {
 		token.AccessToken,
 		cfg.GoCloak.Realm,
 		orgID,
-		idpId)
+		idpID)
 	require.NoError(t, err, "AddOrganizationIdentityProvider failed")
 
 	idps, err = client.GetOrganizationIdentityProviders(

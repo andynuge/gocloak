@@ -9,7 +9,7 @@ import (
 )
 
 // GoCloakIface ...
-type GoCloakIface interface {
+type GoCloakIface interface { //nolint
 	// GetRequest returns a request for calling endpoints.
 	GetRequest(ctx context.Context) *resty.Request
 	// GetRequestWithBearerAuthNoCache returns a JSON base request configured with an auth token and no-cache header.

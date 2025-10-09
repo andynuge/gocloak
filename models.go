@@ -1166,24 +1166,24 @@ type IdentityProviderRepresentation struct {
 }
 
 // OrgDomain returns the organization domain configured for the identity provider, or an empty string if not set
-func (c *IdentityProviderRepresentation) OrgDomain() string {
-	if c == nil || c.Config == nil {
+func (v *IdentityProviderRepresentation) OrgDomain() string {
+	if v == nil || v.Config == nil {
 		return ""
 	}
-	v, ok := (*c.Config)["kc.org.domain"]
+	val, ok := (*v.Config)["kc.org.domain"]
 	if !ok {
 		return ""
 	}
-	return v
+	return val
 }
 
 // RedirectModeEmailMatches returns true if the identity provider's redirect mode is set to email domain match
-func (c *IdentityProviderRepresentation) RedirectModeEmailMatches() bool {
-	if c == nil || c.Config == nil {
+func (v *IdentityProviderRepresentation) RedirectModeEmailMatches() bool {
+	if v == nil || v.Config == nil {
 		return false
 	}
-	v, ok := (*c.Config)["kc.org.broker.redirect.mode.email-matches"]
-	return ok && v == "true"
+	val, ok := (*v.Config)["kc.org.broker.redirect.mode.email-matches"]
+	return ok && val == "true"
 }
 
 // IdentityProviderMapper represents the body of a call to add a mapper to
@@ -1451,6 +1451,7 @@ type RequiredActionProviderRepresentation struct {
 	ProviderID    *string            `json:"providerId,omitempty"`
 }
 
+// UnregisteredRequiredActionProviderRepresentation is a representation of unregistered required actions
 type UnregisteredRequiredActionProviderRepresentation struct {
 	Name       *string `json:"name,omitempty"`
 	ProviderID *string `json:"providerId,omitempty"`
