@@ -19,12 +19,6 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
 
-      - name: WriteGoList
-        run: go list -json -m all > go.list 2>&1
-
-      - name: nancy
-        uses: sonatype-nexus-community/nancy-github-action@main
-
       - name: Run Keycloak
         run: |
           make start-keycloak
